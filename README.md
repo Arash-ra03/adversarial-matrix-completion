@@ -105,19 +105,6 @@ Hyperparameters (ridge `α`, ALS rank/`λ`, nonlinear `α`) are chosen by a quic
 
 **`attack()`** — projects `X` and `Z` onto their top principal component (SVD), sorts rows/columns by that projection, and partitions both into matched clusters. Each cluster gets its own independent k-regular mask, with a single edge swap stitching consecutive clusters together for global connectivity. This concentrates the opponent's observations within feature-similar groups — the "low-leverage / clustered observation" tactic from the spec — while every output is self-validated (shape, degree, connectivity) with a certified from-scratch random-regular-mask fallback if anything is off or times out, so the attack can never draw the invalid-mask penalty by accident.
 
-## How I got here: agent evolution
-
-| Agent | Idea | Lines |
-|---|---|---|
-| `my_agent` → `my_agent_v4` | Single closed-form ridge/bilinear fits; progressively better defaults | ~200–300 |
-| `my_agent_v5` | First 4-signal decomposition (bias + bilinear + ALS + weak nonlinear), blended via held-out validation | 570 |
-| `power_agent` | Slimmer bilinear + low-rank-residual ensemble; attack sorts rows/columns by feature geometry into a banded mask | 177 |
-| `v5_plus_agent` | `v5` architecture plus a pure direct-low-rank expert added to the blend | 601 |
-| `champion_agent` | Adds its own from-scratch k-regular sampler + connectivity checker (self-contained, no grader dependency) | 385 |
-| **`ultimate_agent`** ← *submitted* | Full stack: bias, bilinear, robust/Huber bilinear, ALS low-rank, weak nonlinear — blended with K-fold OOF stacking; SVD-clustered attack with certified fallback | 575 |
-| `ultimate_plus_agent` | Combines `ultimate_agent`'s robust-bilinear expert with `v5_plus`'s direct-low-rank expert + a budget-adaptive attack | 680 |
-
-The honest result: `ultimate_plus_agent` is *more* complex but doesn't beat `ultimate_agent` in either leaderboard above — it ties at best. The OOF-stacked blend in `ultimate_agent` already squeezes out most of the achievable gain; the extra expert in `ultimate_plus` adds redundancy rather than new signal. That's why `ultimate_agent`, not the "plus" version, is the one I submitted.
 
 ## Quickstart
 
